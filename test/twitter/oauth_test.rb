@@ -63,6 +63,30 @@ class OAuthTest < Test::Unit::TestCase
     twitter.access_token.secret.should == 'asecret'
   end
   
+  should "be able to create request token with callback url" do
+    twitter = Twitter::OAuth.new('token', 'secret')
+    consumer = OAuth::Consumer.new('token', 'secret', {:site => 'http://twitter.com'})
+    twitter.stubs(:consumer).returns(consumer)
+
+    request_token = mock('request token')
+    consumer.expects(:get_request_token).with(:oauth_callback => "http://callback.com").returns(request_token)
+
+    twitter.request_token(:oauth_callback => "http://callback.com")
+  end
+  
+  should "be able to create access token with oauth verifier" do
+    twitter = Twitter::OAuth.new('token', 'secret')
+    consumer = OAuth::Consumer.new('token', 'secret', {:site => 'http://twitter.com'})
+    twitter.stubs(:consumer).returns(consumer)
+    
+    access_token = mock('access token', :token => 'atoken', :secret => 'asecret')
+    request_token = mock('request token')
+    request_token.expects(:get_access_token).with(:oauth_verifier => "verifier").returns(access_token)
+    OAuth::RequestToken.expects(:new).with(consumer, 'rtoken', 'rsecret').returns(request_token)
+    
+    twitter.authorize_from_request('rtoken', 'rsecret', :oauth_verifier => "verifier")
+  end
+  
   should "delegate get to access token" do
     access_token = mock('access token')
     twitter = Twitter::OAuth.new('token', 'secret')

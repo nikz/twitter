@@ -20,13 +20,13 @@ module Twitter
       @consumer ||= ::OAuth::Consumer.new(@ctoken, @csecret, {:site => 'http://twitter.com'}.merge(consumer_options))
     end
     
-    def request_token
-      @request_token ||= consumer.get_request_token
+    def request_token(params = {})
+      @request_token ||= consumer.get_request_token(params)
     end
     
-    def authorize_from_request(rtoken, rsecret)
+    def authorize_from_request(rtoken, rsecret, params = {})
       request_token = ::OAuth::RequestToken.new(consumer, rtoken, rsecret)
-      access_token = request_token.get_access_token
+      access_token = request_token.get_access_token(params)
       @atoken, @asecret = access_token.token, access_token.secret
     end
     
